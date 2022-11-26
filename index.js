@@ -22,6 +22,9 @@ const client = new MongoClient(uri, {
 const run = async () => {
   try {
     const carsCollection = client.db("carGurusDb").collection("carsCollection");
+    const bookingCollection = client
+      .db("carGurusDb")
+      .collection("bookingCollection");
     const usersCollection = client
       .db("carGurusDb")
       .collection("usersCollection");
@@ -38,10 +41,31 @@ const run = async () => {
       res.send(cars);
     });
 
-    app.get("/buy-cars/:id", async (req, res) => {
-      const id = req.params.id;
-      const car = await carsCollection.findOne({ _id: id });
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result);
     });
+
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      // const decodedEmail = req.decoded.email;
+      // if (email !== decodedEmail) {
+      //   return res.send(403).send({ message: "Forbidden Access" });
+      // }
+      const query = { email: email };
+      const bookings = await bookingCollection.find(query).toArray();
+      res.send(bookings);
+    });
+
+    // Getting specific Booking
+    // app.get("/bookings/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: ObjectId(id) };
+    //   const booking = await bookingCollection.findOne(query);
+    //   res.send(booking);
+    // });
   } catch (err) {
     console.log(err);
   } finally {
