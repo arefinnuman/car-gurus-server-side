@@ -76,6 +76,30 @@ const run = async () => {
       res.send(cars);
     });
 
+    // Delete car
+    app.delete("/buy-cars/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await carsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // category specific cars
+    app.get("/buy-cars/:category", async (req, res) => {
+      const category = req.params.category;
+      const query = { category: category };
+      const cars = await carsCollection.find(query).toArray();
+      res.send(cars);
+    });
+
+    // email Specific Car
+    app.get("/my-cars/:postedBy", async (req, res) => {
+      const postedBy = req.params.postedBy;
+      const query = { postedBy: postedBy };
+      const cars = await carsCollection.find(query).toArray();
+      res.send(cars);
+    });
+
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
@@ -107,6 +131,14 @@ const run = async () => {
       res.send(user);
     });
 
+    // Delete user
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Make Admin
     app.put("/users/admin/:id", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
@@ -131,6 +163,32 @@ const run = async () => {
       );
       res.send(result);
     });
+
+    // Make Seller
+    app.put("/users/seller/:id", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== "admin") {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          role: "seller",
+        },
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     // Make Buyer
     app.put("/users/buyer/:id", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
@@ -164,6 +222,14 @@ const run = async () => {
       res.send({ isAdmin: user?.role === "admin" });
     });
 
+    // Find Seller
+    app.get("/users/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isSeller: user?.role === "seller" });
+    });
+
     // Find Buyer
     app.get("/users/buyer/:email", async (req, res) => {
       const email = req.params.email;
@@ -187,11 +253,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log("Server is running".cyan, `on port ${port}`.yellow);
 });
-
-// Getting specific Booking
-// app.get("/bookings/:id", async (req, res) => {
-//   const id = req.params.id;
-//   const query = { _id: ObjectId(id) };
-//   const booking = await bookingCollection.findOne(query);
-//   res.send(booking);
-// });
