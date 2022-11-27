@@ -106,6 +106,12 @@ const run = async () => {
       res.send(result);
     });
 
+    // find all bookings
+    app.get("/bookings", async (req, res) => {
+      const bookings = await bookingCollection.find({}).toArray();
+      res.send(bookings);
+    });
+
     app.get("/bookings", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
