@@ -119,6 +119,13 @@ const run = async () => {
       res.send(bookings);
     });
 
+    app.get("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const booking = await bookingCollection.findOne(query);
+      res.send(booking);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
@@ -230,6 +237,20 @@ const run = async () => {
       res.send({ isSeller: user?.role === "seller" });
     });
 
+    // find all seller
+    app.get("/users/sellers", async (req, res) => {
+      const query = { role: "seller" };
+      const user = await usersCollection.find(query).toArray();
+      res.send(user);
+    });
+
+    // find all buyer
+    app.get("/users/buyers", async (req, res) => {
+      const query = { role: "buyer" };
+      const user = await usersCollection.find(query).toArray();
+      res.send(user);
+    });
+
     // Find Buyer
     app.get("/users/buyer/:email", async (req, res) => {
       const email = req.params.email;
@@ -237,6 +258,29 @@ const run = async () => {
       const user = await usersCollection.findOne(query);
       res.send({ isBuyer: user?.role === "buyer" });
     });
+
+    // // Payment
+    // app.post("/create-payment-intent", async (req, res) => {
+    //   const booking = req.body;
+    //   const price = booking.price;
+    //   const amount = price * 100;
+
+    //   const paymentIntent = await stripe.paymentIntents.create({
+    //     currency: "usd",
+    //     amount: amount,
+    //     payment_method_types: ["card"],
+    //   });
+    //   res.send({
+    //     clientSecret: paymentIntent.client_secret,
+    //   });
+    // });
+
+    // // payment success
+    // app.post("/payment", async (req, res) => {
+    //   const payment = req.body;
+    //   const result = await bookingsCollection.insertOne(payment);
+    //   res.send(result);
+    // });
 
     // The End of the Run Function
   } catch (err) {
