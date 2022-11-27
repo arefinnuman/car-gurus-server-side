@@ -50,6 +50,7 @@ const run = async () => {
       .db("carGurusDb")
       .collection("usersCollection");
 
+    // jwt token
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -65,12 +66,14 @@ const run = async () => {
       res.status(403).send({ accessToken: " " });
     });
 
+    // sell cars
     app.post("/sell-car", async (req, res) => {
       const newCar = req.body;
       const result = await carsCollection.insertOne(newCar);
       res.send(result);
     });
 
+    // get all cars
     app.get("/buy-cars", async (req, res) => {
       const cars = await carsCollection.find({}).toArray();
       res.send(cars);
@@ -100,6 +103,7 @@ const run = async () => {
       res.send(cars);
     });
 
+    // post booking
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
@@ -112,7 +116,8 @@ const run = async () => {
       res.send(bookings);
     });
 
-    app.get("/bookings", verifyJWT, async (req, res) => {
+    // find bookings by email
+    app.get("/my-bookings", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
 
@@ -125,6 +130,7 @@ const run = async () => {
       res.send(bookings);
     });
 
+    // find bookings by id
     app.get("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -132,12 +138,14 @@ const run = async () => {
       res.send(booking);
     });
 
+    // Post Users
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
 
+    // find user
     app.get("/users", async (req, res) => {
       const query = {};
       const user = await usersCollection.find(query).toArray();
